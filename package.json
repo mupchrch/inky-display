@@ -1,0 +1,15 @@
+{
+  "name": "inkberry",
+  "version": "0.0.1",
+  "description": "inkberry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "i2c-bus": "^5.2.1",
+    "python-struct": "^1.1.3"
+  }
+}
