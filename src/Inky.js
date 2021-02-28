@@ -11,7 +11,7 @@ class Inky {
   constructor([width, height], color) {
     this.width = width;
     this.height = height;
-    this.buffer = getFilledArray(this.height, this.width);
+    this.buffer = getFilledArray(this.width, this.height);
     this.color = color;
 
     Rpio.init({ gpiomem: false, mapping: 'gpio' });
@@ -56,6 +56,14 @@ class Inky {
   setPixel(x, y, color) {
     // TODO validate color
     this.buffer[y][x] = color;
+  }
+
+  setRect(topLeftX, topLeftY, width, height, color) {
+    for (let x = topLeftX; x < topLeftX + width; x++) {
+      for (let y = topLeftY; y < topLeftY + height; y++) {
+        this.setPixel(x, y, color);
+      }
+    }
   }
 
   getLookUpTable(color) {
