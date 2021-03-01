@@ -1,4 +1,4 @@
-const Inky = require('./src');
+const Inky = require('../src');
 
 async function main() {
   console.log('Begin example.');

@@ -1,3 +1,4 @@
+const sharp = require('sharp');
 const Inky = require('./Inky');
 const { map2d, packBits } = require('./utils');
 const { WHITE, BLACK, RED: TERTIARY } = require('./colors');
@@ -19,6 +20,31 @@ const MASTER_ACTIVATE = 0x20;
 class InkyPhat extends Inky {
   constructor(color) {
     super([136, 250], color);
+  }
+
+  async setImage(imagePath) {
+    const whiteRgb = { r: 255, g: 255, b: 255 };
+
+    const img = await sharp(imagePath)
+      .resize(this.width, this.height, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
+      .flatten({ background: whiteRgb })
+      .threshold(128, { greyscale: false })
+      .raw()
+      .toBuffer();
+
+    for (let i = 0; i < img.length; i += 3) {
+      const x = (i / 3) % this.width;
+      const y = Math.floor((i / 3) / this.width);
+
+      let color = TERTIARY;
+      if (img[i] === 0 && img[i+1] === 0 && img[i+2] === 0) {
+        color = BLACK;
+      } else if (img[i] === 255 && img[i+1] === 255 && img[i+2] === 255) {
+        color = WHITE;
+      }
+
+      this.setPixel(x, y, color);
+    }
   }
 
   show() {

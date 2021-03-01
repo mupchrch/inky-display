@@ -1,11 +1,11 @@
+const path = require('path');
 const Inky = require('../src');
 
 async function main() {
   console.log('Begin example.');
   const inky = await Inky.auto();
 
-  inky.setRect(10, 10, 10, 10, Inky.BLACK);
-  inky.setRect(30, 10, 15, 15, Inky.WHITE);
+  await inky.setImage(path.join(__dirname, 'image.png'));
 
   inky.show();
   console.log('End example.');

@@ -1,5 +1,8 @@
 const Rpio = require('rpio');
+const fs = require('fs');
+const sharp = require('sharp');
 const { getFilledArray } = require('./utils');
+const { WHITE, BLACK } = require('./colors');
 
 const DC_PIN = 22;
 const RESET_PIN = 27;
@@ -63,6 +66,24 @@ class Inky {
       for (let y = topLeftY; y < topLeftY + height; y++) {
         this.setPixel(x, y, color);
       }
+    }
+  }
+
+  async setImage(imagePath) {
+    const whiteRgb = { r: 255, g: 255, b: 255 };
+
+    const img = await sharp(imagePath)
+      .resize(this.width, this.height, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
+      .flatten({ background: whiteRgb }) // merge alpha channel
+      .threshold() // convert to black / white
+      .raw()
+      .toBuffer();
+
+    for (let i = 0; i < img.length; i += 3) {
+      const x = (i / 3) % this.width;
+      const y = Math.floor((i / 3) / this.width);
+
+      this.setPixel(x, y, img[i] ? WHITE : BLACK);
     }
   }
 
