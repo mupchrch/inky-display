@@ -19,22 +19,25 @@ const MASTER_ACTIVATE = 0x20;
 
 class InkyPhat extends Inky {
   constructor(color) {
-    super([136, 250], color);
+    super([136, 250], color, 270);
   }
 
   async setImage(imagePath) {
     const whiteRgb = { r: 255, g: 255, b: 255 };
+    const isSidewaysRotation = (this.rotation / 90) % 2;
+    const [imgWidth, imgHeight] = isSidewaysRotation ? [this.height, this.width] : [this.width, this.height];
 
     const img = await sharp(imagePath)
-      .resize(this.width, this.height, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
+      .resize(imgWidth, imgHeight, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
       .flatten({ background: whiteRgb })
       .threshold(128, { greyscale: false })
       .raw()
       .toBuffer();
 
+    console.log(img.length);
     for (let i = 0; i < img.length; i += 3) {
-      const x = (i / 3) % this.width;
-      const y = Math.floor((i / 3) / this.width);
+      const x = (i / 3) % imgWidth;
+      const y = Math.floor((i / 3) / imgWidth);
 
       let color = TERTIARY;
       if (img[i] === 0 && img[i+1] === 0 && img[i+2] === 0) {
@@ -64,7 +67,7 @@ class InkyPhat extends Inky {
     // VCOM voltage
     this._sendCommand(WRITE_VCOM, [0x70]);
     // Write LUT data
-    this._sendCommand(WRITE_LUT, this.getLookUpTable(this.color));
+    this._sendCommand(WRITE_LUT, this.getLookUpTable());
     // Set RAM address to 0, 0
     this._sendCommand(SET_RAMXCOUNT, [0x00]);
     this._sendCommand(SET_RAMYCOUNT, [0x00, 0x00]);
@@ -81,7 +84,7 @@ class InkyPhat extends Inky {
     this._sendCommand(MASTER_ACTIVATE);
   }
 
-  getLookUpTable(color) {
+  getLookUpTable() {
     const sharedLookUpTable = [
       0x02, 0x02, 0x01, 0x11, 0x12, 0x12, 0x22, 0x22, 0x66, 0x69,
       0x69, 0x59, 0x58, 0x99, 0x99, 0x88, 0x00, 0x00, 0x00, 0x00,
@@ -93,11 +96,11 @@ class InkyPhat extends Inky {
       yellow: sharedLookUpTable
     };
 
-    if (!(color in lookUpTables)) {
-      throw new Error(`Look up table does not contain ${color}`);
+    if (!(this.color in lookUpTables)) {
+      throw new Error(`Look up table does not contain ${this.color}`);
     }
 
-    return lookUpTables[color];
+    return lookUpTables[this.color];
   }
 }
 

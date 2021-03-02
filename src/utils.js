@@ -1,6 +1,12 @@
 // Create a 2D array filled with zeros
-function getFilledArray(width, height, val = 0) {
-  return Array.from(new Array(height), () => Array(width).fill(val));
+// getFilledArray(2, 3) will look something like:
+// [
+//   [0, 0],
+//   [0, 0],
+//   [0, 0]
+// ]
+function get2dArray(innerSize, outerSize, val = 0) {
+  return Array.from(new Array(outerSize), () => Array(innerSize).fill(val));
 }
 
 // Loop over 2D array and run the function against each item
@@ -26,4 +32,4 @@ function packBits(array) {
   return returnArr;
 }
 
-module.exports = { getFilledArray, map2d, packBits };
+module.exports = { get2dArray, map2d, packBits };

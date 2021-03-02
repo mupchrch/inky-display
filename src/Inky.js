@@ -1,7 +1,7 @@
 const Rpio = require('rpio');
 const fs = require('fs');
 const sharp = require('sharp');
-const { getFilledArray } = require('./utils');
+const { get2dArray } = require('./utils');
 const { WHITE, BLACK } = require('./colors');
 
 const DC_PIN = 22;
@@ -11,11 +11,12 @@ const BUSY_PIN = 17;
 const BUSY_TIMEOUT = 5;
 
 class Inky {
-  constructor([width, height], color) {
+  constructor([width, height], color, rotation = 0) {
     this.width = width;
     this.height = height;
-    this.buffer = getFilledArray(this.width, this.height);
+    this.buffer = get2dArray(this.width, this.height);
     this.color = color;
+    this.rotation = rotation;
 
     Rpio.init({ gpiomem: false, mapping: 'gpio' });
     Rpio.open(DC_PIN, Rpio.OUTPUT, Rpio.LOW);
@@ -57,8 +58,21 @@ class Inky {
   }
 
   setPixel(x, y, color) {
-    // TODO validate color
-    this.buffer[y][x] = color;
+    // TODO validate color?
+    switch (this.rotation) {
+      case 0:
+        this.buffer[y][x] = color;
+        break;
+      case 90:
+        this.buffer[x][y] = color;
+        break;
+      case 180:
+        this.buffer[this.height - 1 - y][this.width - 1 - x] = color;
+        break;
+      case 270:
+        this.buffer[this.height - 1 - x][this.width - 1 - y] = color;
+        break;
+    }
   }
 
   setRect(topLeftX, topLeftY, width, height, color) {
@@ -71,23 +85,25 @@ class Inky {
 
   async setImage(imagePath) {
     const whiteRgb = { r: 255, g: 255, b: 255 };
+    const isSidewaysRotation = (this.rotation / 90) % 2;
+    const [imgWidth, imgHeight] = isSidewaysRotation ? [this.height, this.width] : [this.width, this.height];
 
     const img = await sharp(imagePath)
-      .resize(this.width, this.height, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
+      .resize(imgWidth, imgHeight, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
       .flatten({ background: whiteRgb }) // merge alpha channel
       .threshold() // convert to black / white
       .raw()
       .toBuffer();
 
     for (let i = 0; i < img.length; i += 3) {
-      const x = (i / 3) % this.width;
-      const y = Math.floor((i / 3) / this.width);
+      const x = (i / 3) % imgWidth;
+      const y = Math.floor((i / 3) / imgWidth);
 
       this.setPixel(x, y, img[i] ? WHITE : BLACK);
     }
   }
 
-  getLookUpTable(color) {
+  getLookUpTable() {
     throw new Error('getLookUpTable() should be overridden in child class.');
   }
 
