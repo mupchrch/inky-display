@@ -34,7 +34,6 @@ class InkyPhat extends Inky {
       .raw()
       .toBuffer();
 
-    console.log(img.length);
     for (let i = 0; i < img.length; i += 3) {
       const x = (i / 3) % imgWidth;
       const y = Math.floor((i / 3) / imgWidth);

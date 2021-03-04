@@ -64,13 +64,13 @@ class Inky {
         this.buffer[y][x] = color;
         break;
       case 90:
-        this.buffer[x][y] = color;
+        this.buffer[this.height - 1 - x][y] = color;
         break;
       case 180:
         this.buffer[this.height - 1 - y][this.width - 1 - x] = color;
         break;
       case 270:
-        this.buffer[this.height - 1 - x][this.width - 1 - y] = color;
+        this.buffer[x][this.width - 1 - y] = color;
         break;
     }
   }
