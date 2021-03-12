@@ -18,13 +18,6 @@ class Inky {
     this.color = color;
     this.rotation = rotation;
 
-    Rpio.init({ gpiomem: false, mapping: 'gpio' });
-    Rpio.open(DC_PIN, Rpio.OUTPUT, Rpio.LOW);
-    Rpio.pud(DC_PIN, Rpio.PULL_OFF);
-    Rpio.open(RESET_PIN, Rpio.OUTPUT, Rpio.HIGH);
-    Rpio.pud(RESET_PIN, Rpio.PULL_OFF);
-    Rpio.open(BUSY_PIN, Rpio.INPUT, Rpio.PULL_OFF);
-
     this.gpio = {
       LOW: Rpio.LOW,
       HIGH: Rpio.HIGH,
@@ -36,13 +29,22 @@ class Inky {
       sleep: Rpio.sleep
     };
 
-    Rpio.spiBegin();
-    Rpio.spiChipSelect(0);
-    Rpio.spiSetClockDivider(512);
-
     this.spi = {
       write: Rpio.spiWrite
     };
+  }
+
+  _beforeShow() {
+    Rpio.init({ gpiomem: false, mapping: 'gpio' });
+    Rpio.open(DC_PIN, Rpio.OUTPUT, Rpio.LOW);
+    Rpio.pud(DC_PIN, Rpio.PULL_OFF);
+    Rpio.open(RESET_PIN, Rpio.OUTPUT, Rpio.HIGH);
+    Rpio.pud(RESET_PIN, Rpio.PULL_OFF);
+    Rpio.open(BUSY_PIN, Rpio.INPUT, Rpio.PULL_OFF);
+
+    Rpio.spiBegin();
+    Rpio.spiChipSelect(0);
+    Rpio.spiSetClockDivider(250);
 
     this.gpio.write(this.gpio.RESET_PIN, this.gpio.LOW);
     this.gpio.sleep(0.5);
@@ -53,8 +55,14 @@ class Inky {
     this._busyWait();
   }
 
+  _afterShow() {
+    Rpio.exit();
+  }
+
   show() {
+    // this.beforeShow();
     throw new Error('show() should be overridden in child class.');
+    // this.afterShow();
   }
 
   setPixel(x, y, color) {
@@ -83,12 +91,12 @@ class Inky {
     }
   }
 
-  async setImage(imagePath) {
+  async setImage(image) {
     const whiteRgb = { r: 255, g: 255, b: 255 };
     const isSidewaysRotation = (this.rotation / 90) % 2;
     const [imgWidth, imgHeight] = isSidewaysRotation ? [this.height, this.width] : [this.width, this.height];
 
-    const img = await sharp(imagePath)
+    const img = await sharp(image)
       .resize(imgWidth, imgHeight, { fit: sharp.fit.contain, background: { ...whiteRgb, alpha: 1 } })
       .flatten({ background: whiteRgb }) // merge alpha channel
       .threshold() // convert to black / white

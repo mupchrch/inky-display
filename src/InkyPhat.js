@@ -50,6 +50,8 @@ class InkyPhat extends Inky {
   }
 
   show() {
+    this._beforeShow();
+
     this._sendCommand(DRIVER_CONTROL, [this.height - 1, (this.height - 1) >> 8, 0x00]);
     // Set dummy line period
     this._sendCommand(WRITE_DUMMY, [0x1B]);
@@ -81,6 +83,8 @@ class InkyPhat extends Inky {
 
     this._busyWait();
     this._sendCommand(MASTER_ACTIVATE);
+
+    this._afterShow();
   }
 
   getLookUpTable() {

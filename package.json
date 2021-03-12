@@ -1,6 +1,6 @@
 {
   "name": "inky-display",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "inky-display",
   "main": "./src/index.js",
   "scripts": {
